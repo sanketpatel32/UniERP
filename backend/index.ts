@@ -2,6 +2,8 @@ import express, { type Express, type Request, type Response } from "express";
 
 import healthRoutes from "./src/modules/common/routes/health.route";
 import { loggerMiddleware } from "./src/middlewares/logger.middleware";
+import { errorHandler } from "./src/middlewares/error.middleware";
+import { sendSuccess } from "./src/utils/response";
 import logger from "./src/utils/logger";
 
 const app: Express = express();
@@ -14,8 +16,11 @@ app.use(loggerMiddleware);
 app.use("/api/v1/health", healthRoutes);
 
 app.get("/", (req: Request, res: Response) => {
-	res.send("Hello from Express + TypeScript + Bun!");
+	sendSuccess(res, 200, "Hello from Express + TypeScript + Bun!");
 });
+
+// Global Error Handler
+app.use(errorHandler);
 
 app.listen(port, () => {
 	logger.info(`[server]: Server is running at http://localhost:${port}`);

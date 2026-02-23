@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
+import { sendSuccess } from "../../../utils/response";
 
 export const checkHealth = (req: Request, res: Response) => {
-	res.status(200).json({
-		status: "success",
-		message: "Server is healthy",
+	const data = {
 		timestamp: new Date().toISOString(),
-	});
+	};
+	sendSuccess(res, 200, "Server is healthy", data);
 };
