@@ -36,7 +36,7 @@ app.use("/api/v1/health", healthRoutes);
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  */
-app.get("/", (req: Request, res: Response) => {
+app.get("/", (_req: Request, res: Response) => {
 	sendSuccess(res, 200, "Hello from Express + TypeScript + Bun!");
 });
 
