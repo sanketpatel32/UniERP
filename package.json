@@ -1,0 +1,21 @@
+{
+  "name": "uni-erp-root",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "bun@1.0.0",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  }
+}

@@ -7,16 +7,16 @@ const { combine, timestamp, printf, colorize } = winston.format;
 const consoleFormat = combine(
 	colorize(),
 	timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-	printf(({ level, message, timestamp }) => {
-		return `[${timestamp}] ${level}: ${message}`;
+	printf((info: winston.Logform.TransformableInfo) => {
+		return `[${info.timestamp}] ${info.level}: ${info.message}`;
 	}),
 );
 
 // Define custom log format for files
 const fileFormat = combine(
 	timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-	printf(({ level, message, timestamp }) => {
-		return `[${timestamp}] ${level}: ${message}`;
+	printf((info: winston.Logform.TransformableInfo) => {
+		return `[${info.timestamp}] ${info.level}: ${info.message}`;
 	}),
 );
 
