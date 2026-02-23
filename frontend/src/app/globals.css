@@ -4,6 +4,64 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ── Design System Tokens (design-doc v1.0.0) ── */
+:root {
+  /* color.bg.* */
+  --color-bg-canvas: #0b1120;
+  --color-bg-surface: #111827;
+  --color-bg-elevated: #1f2937;
+  --color-bg-overlay: rgba(2, 6, 23, 0.72);
+
+  /* color.border.* */
+  --color-border-default: #334155;
+  --color-border-strong: #475569;
+  --color-border-focus: #3b82f6;
+
+  /* text.* */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-disabled: #64748b;
+  --text-inverse: #020617;
+  --text-link: #60a5fa;
+
+  /* color.accent.blue.* */
+  --color-accent-blue-300: #93c5fd;
+  --color-accent-blue-400: #60a5fa;
+  --color-accent-blue-500: #3b82f6;
+  --color-accent-blue-600: #2563eb;
+  --color-accent-blue-700: #1d4ed8;
+
+  /* radius.* */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 9999px;
+
+  /* shadow.* */
+  --shadow-low: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-mid: 0 8px 20px rgba(0, 0, 0, 0.35);
+  --shadow-high: 0 16px 48px rgba(0, 0, 0, 0.45);
+
+  /* motion.* */
+  --motion-duration-fast: 120ms;
+  --motion-duration-base: 180ms;
+  --motion-duration-slow: 260ms;
+  --motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --motion-easing-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* status tokens */
+  --status-success-bg: #052e16;
+  --status-success-fg: #86efac;
+  --status-warning-bg: #3f2a04;
+  --status-warning-fg: #fcd34d;
+  --status-error-bg: #3f0d16;
+  --status-error-fg: #fda4af;
+  --status-info-bg: #0b2b4a;
+  --status-info-fg: #93c5fd;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
