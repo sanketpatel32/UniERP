@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type Role = "company" | "employee";
 
-export default function HomePage() {
-  const [role, setRole] = useState<Role>("company");
+export function SignupForm() {
+  const searchParams = useSearchParams();
+  const initialRole = (searchParams.get("role") as Role) || "company";
 
   return (
     <div
@@ -29,75 +30,49 @@ export default function HomePage() {
               className="text-3xl font-bold"
               style={{ color: "var(--text-primary)", lineHeight: "38px" }}
             >
-              Sign in to UniERP
+              Join UniERP
             </h1>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              Welcome back! Please enter your details.
+              Create a new account as{" "}
+              {initialRole === "company" ? "a Company" : "an Employee"}.
             </p>
           </div>
 
-          {/* Role Toggle */}
-          <div
-            className="mb-8 flex rounded-[var(--radius-md)] p-1"
-            style={{
-              background: "var(--color-bg-elevated)",
-              border: "1px solid var(--color-border-default)",
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setRole("company")}
-              className="flex-1 rounded-[calc(var(--radius-md)-4px)] py-2 text-sm font-semibold outline-none transition-all duration-[var(--motion-duration-fast)]"
-              style={{
-                background:
-                  role === "company"
-                    ? "var(--color-bg-surface)"
-                    : "transparent",
-                color:
-                  role === "company"
-                    ? "var(--text-primary)"
-                    : "var(--text-secondary)",
-                boxShadow: role === "company" ? "var(--shadow-low)" : "none",
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
-                e.currentTarget.style.outlineOffset = "2px";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.outline = "none";
-              }}
-            >
-              Company
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole("employee")}
-              className="flex-1 rounded-[calc(var(--radius-md)-4px)] py-2 text-sm font-semibold outline-none transition-all duration-[var(--motion-duration-fast)]"
-              style={{
-                background:
-                  role === "employee"
-                    ? "var(--color-bg-surface)"
-                    : "transparent",
-                color:
-                  role === "employee"
-                    ? "var(--text-primary)"
-                    : "var(--text-secondary)",
-                boxShadow: role === "employee" ? "var(--shadow-low)" : "none",
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
-                e.currentTarget.style.outlineOffset = "2px";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.outline = "none";
-              }}
-            >
-              Employee
-            </button>
-          </div>
-
-          {/* Form */}
           <form className="flex flex-col gap-4" action={() => {}}>
+            {/* Full Name */}
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="name"
+                className="text-sm font-medium"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Full Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                required
+                placeholder={
+                  initialRole === "company" ? "Acme Corp" : "John Doe"
+                }
+                className="rounded-[var(--radius-md)] border px-4 py-2.5 text-sm outline-none"
+                style={{
+                  background: "var(--color-bg-elevated)",
+                  borderColor: "var(--color-border-default)",
+                  color: "var(--text-primary)",
+                  transition: `border-color var(--motion-duration-fast) var(--motion-easing-standard)`,
+                }}
+                onFocus={(e) =>
+                  (e.currentTarget.style.borderColor =
+                    "var(--color-border-focus)")
+                }
+                onBlur={(e) =>
+                  (e.currentTarget.style.borderColor =
+                    "var(--color-border-default)")
+                }
+              />
+            </div>
+
             {/* Email */}
             <div className="flex flex-col gap-1">
               <label
@@ -110,10 +85,11 @@ export default function HomePage() {
               <input
                 id="email"
                 type="email"
-                autoComplete="email"
                 required
                 placeholder={
-                  role === "company" ? "admin@company.com" : "you@company.com"
+                  initialRole === "company"
+                    ? "admin@company.com"
+                    : "you@company.com"
                 }
                 className="rounded-[var(--radius-md)] border px-4 py-2.5 text-sm outline-none"
                 style={{
@@ -135,26 +111,16 @@ export default function HomePage() {
 
             {/* Password */}
             <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="text-sm font-medium"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Password
-                </label>
-                <button
-                  type="button"
-                  className="text-xs outline-none hover:underline"
-                  style={{ color: "var(--text-link)" }}
-                >
-                  Forgot password?
-                </button>
-              </div>
+              <label
+                htmlFor="password"
+                className="text-sm font-medium"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Password
+              </label>
               <input
                 id="password"
                 type="password"
-                autoComplete="current-password"
                 required
                 placeholder="••••••••"
                 className="rounded-[var(--radius-md)] border px-4 py-2.5 text-sm outline-none"
@@ -201,18 +167,18 @@ export default function HomePage() {
                 e.currentTarget.style.outline = "none";
               }}
             >
-              Sign in as {role === "company" ? "Company" : "Employee"}
+              Sign up
             </button>
           </form>
 
-          {/* Footer Signup Link */}
+          {/* Footer Login Link */}
           <p
             className="mt-6 text-center text-sm"
             style={{ color: "var(--text-muted)" }}
           >
-            Don&apos;t have an account?{" "}
+            Already have an account?{" "}
             <Link
-              href={`/signup?role=${role}`}
+              href="/"
               className="font-medium outline-none"
               style={{
                 color: "var(--text-link)",
@@ -225,7 +191,7 @@ export default function HomePage() {
                 (e.currentTarget.style.color = "var(--text-link)")
               }
             >
-              Sign up
+              Sign in
             </Link>
           </p>
         </div>
