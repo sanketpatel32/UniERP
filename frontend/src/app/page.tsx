@@ -1,12 +1,46 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ApiError, login } from "@/lib/api";
+import { getRoleRoute, setAccessToken } from "@/lib/auth-storage";
 
 type Role = "company" | "employee";
 
 export default function HomePage() {
+  const router = useRouter();
   const [role, setRole] = useState<Role>("company");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await login({
+        email,
+        password,
+      });
+
+      setAccessToken(response.accessToken);
+      router.push(getRoleRoute(response.user.role));
+      setIsSubmitting(false);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Unable to sign in right now. Please try again.");
+      }
+      setIsSubmitting(false);
+    }
+  };
+
+  const roleText = role === "company" ? "Company" : "Employee";
 
   return (
     <div
@@ -14,7 +48,6 @@ export default function HomePage() {
       style={{ background: "var(--color-bg-canvas)" }}
     >
       <div className="w-full max-w-md">
-        {/* Card */}
         <div
           className="rounded-[var(--radius-xl)] border p-8"
           style={{
@@ -23,7 +56,6 @@ export default function HomePage() {
             boxShadow: "var(--shadow-high)",
           }}
         >
-          {/* Header */}
           <div className="mb-8 text-center">
             <h1
               className="text-3xl font-bold"
@@ -36,7 +68,6 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Role Toggle */}
           <div
             className="mb-8 flex rounded-[var(--radius-md)] p-1"
             style={{
@@ -59,12 +90,12 @@ export default function HomePage() {
                     : "var(--text-secondary)",
                 boxShadow: role === "company" ? "var(--shadow-low)" : "none",
               }}
-              onFocus={(e) => {
-                e.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
-                e.currentTarget.style.outlineOffset = "2px";
+              onFocus={(event) => {
+                event.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
+                event.currentTarget.style.outlineOffset = "2px";
               }}
-              onBlur={(e) => {
-                e.currentTarget.style.outline = "none";
+              onBlur={(event) => {
+                event.currentTarget.style.outline = "none";
               }}
             >
               Company
@@ -84,21 +115,19 @@ export default function HomePage() {
                     : "var(--text-secondary)",
                 boxShadow: role === "employee" ? "var(--shadow-low)" : "none",
               }}
-              onFocus={(e) => {
-                e.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
-                e.currentTarget.style.outlineOffset = "2px";
+              onFocus={(event) => {
+                event.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
+                event.currentTarget.style.outlineOffset = "2px";
               }}
-              onBlur={(e) => {
-                e.currentTarget.style.outline = "none";
+              onBlur={(event) => {
+                event.currentTarget.style.outline = "none";
               }}
             >
               Employee
             </button>
           </div>
 
-          {/* Form */}
-          <form className="flex flex-col gap-4" action={() => {}}>
-            {/* Email */}
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1">
               <label
                 htmlFor="email"
@@ -112,6 +141,8 @@ export default function HomePage() {
                 type="email"
                 autoComplete="email"
                 required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder={
                   role === "company" ? "admin@company.com" : "you@company.com"
                 }
@@ -122,18 +153,17 @@ export default function HomePage() {
                   color: "var(--text-primary)",
                   transition: `border-color var(--motion-duration-fast) var(--motion-easing-standard)`,
                 }}
-                onFocus={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onFocus={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-focus)")
                 }
-                onBlur={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onBlur={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-default)")
                 }
               />
             </div>
 
-            {/* Password */}
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <label
@@ -156,7 +186,9 @@ export default function HomePage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                placeholder="••••••••"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="********"
                 className="rounded-[var(--radius-md)] border px-4 py-2.5 text-sm outline-none"
                 style={{
                   background: "var(--color-bg-elevated)",
@@ -164,48 +196,62 @@ export default function HomePage() {
                   color: "var(--text-primary)",
                   transition: `border-color var(--motion-duration-fast) var(--motion-easing-standard)`,
                 }}
-                onFocus={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onFocus={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-focus)")
                 }
-                onBlur={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onBlur={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-default)")
                 }
               />
             </div>
 
-            {/* Submit */}
+            {errorMessage && (
+              <p
+                className="rounded-[var(--radius-md)] border px-3 py-2 text-sm"
+                style={{
+                  borderColor: "var(--status-error-fg)",
+                  background: "var(--status-error-bg)",
+                  color: "var(--status-error-fg)",
+                }}
+              >
+                {errorMessage}
+              </p>
+            )}
+
             <button
               type="submit"
+              disabled={isSubmitting}
               className="mt-2 h-11 w-full rounded-[var(--radius-md)] text-sm font-semibold outline-none"
               style={{
                 background: "var(--color-accent-blue-500)",
                 color: "var(--text-inverse)",
                 boxShadow: "var(--shadow-low)",
                 transition: `background var(--motion-duration-fast) var(--motion-easing-standard)`,
+                opacity: isSubmitting ? 0.75 : 1,
+                cursor: isSubmitting ? "not-allowed" : "pointer",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background =
+              onMouseEnter={(event) =>
+                (event.currentTarget.style.background =
                   "var(--color-accent-blue-600)")
               }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background =
+              onMouseLeave={(event) =>
+                (event.currentTarget.style.background =
                   "var(--color-accent-blue-500)")
               }
-              onFocus={(e) => {
-                e.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
-                e.currentTarget.style.outlineOffset = "2px";
+              onFocus={(event) => {
+                event.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
+                event.currentTarget.style.outlineOffset = "2px";
               }}
-              onBlur={(e) => {
-                e.currentTarget.style.outline = "none";
+              onBlur={(event) => {
+                event.currentTarget.style.outline = "none";
               }}
             >
-              Sign in as {role === "company" ? "Company" : "Employee"}
+              {isSubmitting ? "Signing in..." : `Sign in as ${roleText}`}
             </button>
           </form>
 
-          {/* Footer Signup Link */}
           <p
             className="mt-6 text-center text-sm"
             style={{ color: "var(--text-muted)" }}
@@ -218,11 +264,11 @@ export default function HomePage() {
                 color: "var(--text-link)",
                 transition: `color var(--motion-duration-fast) var(--motion-easing-standard)`,
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color = "var(--color-accent-blue-300)")
+              onMouseEnter={(event) =>
+                (event.currentTarget.style.color = "var(--color-accent-blue-300)")
               }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "var(--text-link)")
+              onMouseLeave={(event) =>
+                (event.currentTarget.style.color = "var(--text-link)")
               }
             >
               Sign up

@@ -1,13 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { ApiError, signupCompany } from "@/lib/api";
+import { getRoleRoute, setAccessToken } from "@/lib/auth-storage";
 
 type Role = "company" | "employee";
 
 export function SignupForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialRole = (searchParams.get("role") as Role) || "company";
+  const isEmployeeIntent = initialRole === "employee";
+
+  const [companyName, setCompanyName] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (event: React.SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setErrorMessage(null);
+
+    if (isEmployeeIntent) {
+      setErrorMessage(
+        "Employee self-signup is not available yet. Please ask a company admin to create your account.",
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await signupCompany({
+        companyName,
+        fullName,
+        email,
+        password,
+      });
+
+      setAccessToken(response.accessToken);
+      router.push(getRoleRoute(response.user.role));
+      setIsSubmitting(false);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("Unable to sign up right now. Please try again.");
+      }
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div
@@ -15,7 +60,6 @@ export function SignupForm() {
       style={{ background: "var(--color-bg-canvas)" }}
     >
       <div className="w-full max-w-md">
-        {/* Card */}
         <div
           className="rounded-[var(--radius-xl)] border p-8"
           style={{
@@ -24,7 +68,6 @@ export function SignupForm() {
             boxShadow: "var(--shadow-high)",
           }}
         >
-          {/* Header */}
           <div className="mb-8 text-center">
             <h1
               className="text-3xl font-bold"
@@ -33,28 +76,39 @@ export function SignupForm() {
               Join UniERP
             </h1>
             <p className="mt-2 text-sm" style={{ color: "var(--text-muted)" }}>
-              Create a new account as{" "}
-              {initialRole === "company" ? "a Company" : "an Employee"}.
+              Create a new company admin account.
             </p>
           </div>
 
-          <form className="flex flex-col gap-4" action={() => {}}>
-            {/* Full Name */}
+          {isEmployeeIntent && (
+            <p
+              className="mb-4 rounded-[var(--radius-md)] border px-3 py-2 text-sm"
+              style={{
+                borderColor: "var(--status-warning-fg)",
+                background: "var(--status-warning-bg)",
+                color: "var(--status-warning-fg)",
+              }}
+            >
+              Employee self-signup is not available yet.
+            </p>
+          )}
+
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-1">
               <label
-                htmlFor="name"
+                htmlFor="companyName"
                 className="text-sm font-medium"
                 style={{ color: "var(--text-secondary)" }}
               >
-                Full Name
+                Company Name
               </label>
               <input
-                id="name"
+                id="companyName"
                 type="text"
                 required
-                placeholder={
-                  initialRole === "company" ? "Acme Corp" : "John Doe"
-                }
+                value={companyName}
+                onChange={(event) => setCompanyName(event.target.value)}
+                placeholder="Acme Corp"
                 className="rounded-[var(--radius-md)] border px-4 py-2.5 text-sm outline-none"
                 style={{
                   background: "var(--color-bg-elevated)",
@@ -62,18 +116,50 @@ export function SignupForm() {
                   color: "var(--text-primary)",
                   transition: `border-color var(--motion-duration-fast) var(--motion-easing-standard)`,
                 }}
-                onFocus={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onFocus={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-focus)")
                 }
-                onBlur={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onBlur={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-default)")
                 }
               />
             </div>
 
-            {/* Email */}
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="fullName"
+                className="text-sm font-medium"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                Admin Full Name
+              </label>
+              <input
+                id="fullName"
+                type="text"
+                required
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
+                placeholder="John Doe"
+                className="rounded-[var(--radius-md)] border px-4 py-2.5 text-sm outline-none"
+                style={{
+                  background: "var(--color-bg-elevated)",
+                  borderColor: "var(--color-border-default)",
+                  color: "var(--text-primary)",
+                  transition: `border-color var(--motion-duration-fast) var(--motion-easing-standard)`,
+                }}
+                onFocus={(event) =>
+                  (event.currentTarget.style.borderColor =
+                    "var(--color-border-focus)")
+                }
+                onBlur={(event) =>
+                  (event.currentTarget.style.borderColor =
+                    "var(--color-border-default)")
+                }
+              />
+            </div>
+
             <div className="flex flex-col gap-1">
               <label
                 htmlFor="email"
@@ -86,11 +172,9 @@ export function SignupForm() {
                 id="email"
                 type="email"
                 required
-                placeholder={
-                  initialRole === "company"
-                    ? "admin@company.com"
-                    : "you@company.com"
-                }
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="admin@company.com"
                 className="rounded-[var(--radius-md)] border px-4 py-2.5 text-sm outline-none"
                 style={{
                   background: "var(--color-bg-elevated)",
@@ -98,18 +182,17 @@ export function SignupForm() {
                   color: "var(--text-primary)",
                   transition: `border-color var(--motion-duration-fast) var(--motion-easing-standard)`,
                 }}
-                onFocus={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onFocus={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-focus)")
                 }
-                onBlur={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onBlur={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-default)")
                 }
               />
             </div>
 
-            {/* Password */}
             <div className="flex flex-col gap-1">
               <label
                 htmlFor="password"
@@ -122,7 +205,9 @@ export function SignupForm() {
                 id="password"
                 type="password"
                 required
-                placeholder="••••••••"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="********"
                 className="rounded-[var(--radius-md)] border px-4 py-2.5 text-sm outline-none"
                 style={{
                   background: "var(--color-bg-elevated)",
@@ -130,48 +215,62 @@ export function SignupForm() {
                   color: "var(--text-primary)",
                   transition: `border-color var(--motion-duration-fast) var(--motion-easing-standard)`,
                 }}
-                onFocus={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onFocus={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-focus)")
                 }
-                onBlur={(e) =>
-                  (e.currentTarget.style.borderColor =
+                onBlur={(event) =>
+                  (event.currentTarget.style.borderColor =
                     "var(--color-border-default)")
                 }
               />
             </div>
 
-            {/* Submit */}
+            {errorMessage && (
+              <p
+                className="rounded-[var(--radius-md)] border px-3 py-2 text-sm"
+                style={{
+                  borderColor: "var(--status-error-fg)",
+                  background: "var(--status-error-bg)",
+                  color: "var(--status-error-fg)",
+                }}
+              >
+                {errorMessage}
+              </p>
+            )}
+
             <button
               type="submit"
+              disabled={isSubmitting}
               className="mt-2 h-11 w-full rounded-[var(--radius-md)] text-sm font-semibold outline-none"
               style={{
                 background: "var(--color-accent-blue-500)",
                 color: "var(--text-inverse)",
                 boxShadow: "var(--shadow-low)",
                 transition: `background var(--motion-duration-fast) var(--motion-easing-standard)`,
+                opacity: isSubmitting ? 0.75 : 1,
+                cursor: isSubmitting ? "not-allowed" : "pointer",
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background =
+              onMouseEnter={(event) =>
+                (event.currentTarget.style.background =
                   "var(--color-accent-blue-600)")
               }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background =
+              onMouseLeave={(event) =>
+                (event.currentTarget.style.background =
                   "var(--color-accent-blue-500)")
               }
-              onFocus={(e) => {
-                e.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
-                e.currentTarget.style.outlineOffset = "2px";
+              onFocus={(event) => {
+                event.currentTarget.style.outline = `2px solid var(--color-border-focus)`;
+                event.currentTarget.style.outlineOffset = "2px";
               }}
-              onBlur={(e) => {
-                e.currentTarget.style.outline = "none";
+              onBlur={(event) => {
+                event.currentTarget.style.outline = "none";
               }}
             >
-              Sign up
+              {isSubmitting ? "Creating account..." : "Sign up"}
             </button>
           </form>
 
-          {/* Footer Login Link */}
           <p
             className="mt-6 text-center text-sm"
             style={{ color: "var(--text-muted)" }}
@@ -184,11 +283,11 @@ export function SignupForm() {
                 color: "var(--text-link)",
                 transition: `color var(--motion-duration-fast) var(--motion-easing-standard)`,
               }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.color = "var(--color-accent-blue-300)")
+              onMouseEnter={(event) =>
+                (event.currentTarget.style.color = "var(--color-accent-blue-300)")
               }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "var(--text-link)")
+              onMouseLeave={(event) =>
+                (event.currentTarget.style.color = "var(--text-link)")
               }
             >
               Sign in

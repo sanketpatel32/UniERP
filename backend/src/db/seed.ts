@@ -10,8 +10,8 @@ const slugify = (value: string) =>
 	value
 		.trim()
 		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/^-+|-+$/g, "")
+		.replaceAll(/[^a-z0-9]+/g, "-")
+		.replaceAll(/^(-+)|(-+)$/g, "")
 		.slice(0, 80);
 
 const run = async () => {
@@ -85,13 +85,12 @@ const run = async () => {
 	console.log("Seed completed successfully.");
 };
 
-run()
-	.then(async () => {
-		await sqlClient.end();
-		process.exit(0);
-	})
-	.catch(async (error) => {
-		console.error("Seed failed:", error);
-		await sqlClient.end();
-		process.exit(1);
-	});
+try {
+	await run();
+	await sqlClient.end();
+	process.exit(0);
+} catch (error) {
+	console.error("Seed failed:", error);
+	await sqlClient.end();
+	process.exit(1);
+}
