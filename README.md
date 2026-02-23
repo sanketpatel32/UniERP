@@ -1,201 +1,212 @@
-# Unified Company Operating System
+# UniERP — The Unified Company Operating System
 
-[![Monorepo](https://img.shields.io/badge/monorepo-turbo-blue)](https://turbo.build/repo)
-[![Frontend](https://img.shields.io/badge/frontend-Next.js%2016-black)](./frontend)
-[![Backend](https://img.shields.io/badge/backend-Express%205%20%2B%20Bun-green)](./backend)
 [![TypeScript](https://img.shields.io/badge/language-TypeScript-3178C6)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/frontend-Next.js%2016-black)](./frontend)
+[![Express](https://img.shields.io/badge/backend-Express%205%20%2B%20Bun-green)](./backend)
+[![License](https://img.shields.io/badge/license-Proprietary-red)](#license)
 
-A full-stack monorepo for a company operating system MVP with:
-- Next.js frontend (`frontend`)
-- Express + Bun backend (`backend`)
-- Turbo for workspace orchestration
+**One platform to run your entire company.** UniERP combines HR, payroll, leave management, timesheets, project management, and AI-powered tools into a single, multi-tenant SaaS platform — so you can stop juggling ten different apps and start running your business.
 
-## Table of Contents
+---
 
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Available Scripts](#available-scripts)
-- [API Reference](#api-reference)
-- [Project Structure](#project-structure)
-- [Development Workflow](#development-workflow)
-- [Troubleshooting](#troubleshooting)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [License](#license)
+## Why UniERP?
 
-## Architecture
+Most growing companies cobble together separate tools for HR, payroll, project tracking, and documentation. That means scattered data, broken workflows, and wasted time.
 
-This repository is a Turbo monorepo with two applications:
+UniERP replaces that chaos with a **unified operating system** where everything lives in one place — employees, payroll, projects, and AI assistance — all connected, all under one roof.
 
-- `frontend`: Next.js App Router UI that checks backend health.
-- `backend`: Express API with structured responses, logging middleware, and Swagger docs.
+---
 
-Current local defaults:
-- Frontend: `http://localhost:3000`
-- Backend: `http://localhost:3001`
-- API docs: `http://localhost:3001/docs`
+## Core Modules
 
-## Tech Stack
+### 👥 HR & Employee Management
 
-- Runtime and package manager: Bun
-- Monorepo build system: Turborepo
-- Frontend: Next.js 16, React 19, Tailwind CSS 4, TypeScript
-- Backend: Express 5, TypeScript, Winston logger, Swagger (OpenAPI)
-- Linting and formatting: Biome
+- Company self-registration with instant setup
+- Sub-Admin creates and manages employee profiles
+- Store key details: name, email, salary, leave balance
+- Employees can update their own profile info
+
+### 💰 Payroll
+
+- Fixed monthly salary model — simple, predictable
+- Sub-Admin runs payroll manually with one click
+- Automatic payslip generation
+- Multi-currency support for global teams
+- Country-specific tax configuration (extensible)
+
+### 🏖️ Leave Management
+
+- Configurable leave types (Annual, Sick, etc.)
+- Employees request leave; Sub-Admins approve or reject
+- Approved leave automatically deducts from balance
+- Full leave reports for management visibility
+
+### ⏱️ Timesheets
+
+- Employees log daily working hours
+- Management dashboards for tracking and reporting
+- Designed for visibility, not payroll calculation
+
+### 📋 Project Management (Kanban)
+
+- Hierarchical structure: **Story → Task → Sub-task**
+- Fixed workflow: `To Do → In Progress → Review → Done`
+- Assign tasks to team members with descriptions and timestamps
+- Support for multiple projects per company
+
+### 🤖 AI-Powered RAG Assistant
+
+- Ask questions about your project documentation, system architecture, and internal policies
+- Powered by Retrieval-Augmented Generation (RAG)
+- Read-only, project-knowledge-scoped — safe and focused
+
+### 🔍 Automated GitHub Code Review
+
+- Triggered automatically on every GitHub push
+- Provides code quality feedback, best practice suggestions, and potential bug detection
+- Helps maintain code standards without manual review overhead
+
+### 📝 Audit Logs
+
+- Full action-level tracking across the platform
+- Logs user, company, role, action, and timestamp
+- Built-in accountability and compliance support
+
+---
+
+## Who Is It For?
+
+| Audience                        | What They Get                                                      |
+| ------------------------------- | ------------------------------------------------------------------ |
+| **Small & Mid-Sized Companies** | An all-in-one platform that replaces 5+ separate tools             |
+| **Multi-Country Organizations** | Multi-currency payroll and global team management                  |
+| **Company Sub-Admins**          | Full control over employees, payroll, projects, leave, and reports |
+| **Employees**                   | Self-service timesheets, leave requests, task views, and payslips  |
+
+---
+
+## Key Design Principles
+
+- **Multi-Tenant SaaS** — Every company gets isolated, secure data via `company_id` segregation
+- **Modular Monolith** — Clean module boundaries without microservice complexity
+- **Security First** — Role-based access control, JWT authentication, and full audit logging
+- **Built for Speed** — Powered by Bun runtime, Turborepo, and modern TypeScript tooling
+
+---
 
 ## Getting Started
 
-### 1. Prerequisites
+### Prerequisites
 
-- Bun `>= 1.x`
+- [Bun](https://bun.sh/) `>= 1.x`
 
-### 2. Install dependencies
+### Quick Start
 
 ```bash
+# Install dependencies
 bun install
-```
 
-### 3. Configure environment
+# Set up backend environment
+cp backend/.env.example backend/.env   # macOS/Linux
+Copy-Item backend/.env.example backend/.env   # Windows PowerShell
 
-Create backend environment file:
+# Start local database and Adminer
+docker compose up -d postgres adminer
 
-```bash
-cp backend/.env.example backend/.env
-```
+# Run backend database migrations
+cd backend && bun run db:migrate
 
-On Windows PowerShell:
+# Optional: seed a default company admin
+cd backend && bun run db:seed
 
-```powershell
-Copy-Item backend/.env.example backend/.env
-```
-
-### 4. Run in development mode
-
-From repository root:
-
-```bash
+# Start everything (from repo root)
 bun run dev
 ```
 
-This starts all workspace `dev` scripts through Turbo.
+- **Frontend:** http://localhost:3000
+- **Backend API:** http://localhost:3001
+- **API Docs (Swagger):** http://localhost:3001/docs
+- **Adminer:** http://localhost:8080
+- **PostgreSQL:** `localhost:5433` (mapped to container `5432`)
 
-## Environment Variables
+---
 
-### Backend (`backend/.env`)
+## Tech Stack
 
-| Variable | Required | Default | Description |
-| --- | --- | --- | --- |
-| `PORT` | No | `3001` | Backend server port |
-| `LOG_LEVEL` | No | `info` | Winston log level |
-| `NODE_ENV` | No | `development` | App environment |
+| Layer    | Technology                              |
+| -------- | --------------------------------------- |
+| Runtime  | Bun                                     |
+| Monorepo | Turborepo                               |
+| Frontend | Next.js 16, React 19, Tailwind CSS 4    |
+| Backend  | Express 5, TypeScript, Drizzle, JWT, Zod, Swagger |
+| Database | PostgreSQL 16, Docker Compose, Adminer  |
+| Linting  | Biome                                   |
 
-### Frontend
+---
 
-| Variable | Required | Default | Description |
-| --- | --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | No | `http://localhost:3001/api/v1` | Base URL used by frontend API client |
+## Backend Environment Variables
 
-## Available Scripts
+Define these in `backend/.env`:
 
-Run from repository root:
-
-| Script | Command | Purpose |
+| Variable | Required | Description |
 | --- | --- | --- |
-| `dev` | `bun run dev` | Run all apps in development mode |
-| `build` | `bun run build` | Build all workspaces |
-| `start` | `bun run start` | Start production commands for workspaces |
-| `lint` | `bun run lint` | Lint all workspaces |
-| `format` | `bun run format` | Format all workspaces |
-| `typecheck` | `bun run typecheck` | Type-check all workspaces |
+| `PORT` | No | Backend server port (default `3001`) |
+| `LOG_LEVEL` | No | Log level (default `info`) |
+| `NODE_ENV` | No | Environment (`development`, `test`, `production`) |
+| `DATABASE_URL` | Yes | PostgreSQL connection string (default `postgres://app:app@localhost:5433/ucos`) |
+| `JWT_ACCESS_SECRET` | Yes | Access token signing secret |
+| `JWT_REFRESH_SECRET` | Yes | Refresh token signing secret |
+| `JWT_ACCESS_EXPIRES_IN` | No | Access token TTL (default `15m`) |
+| `JWT_REFRESH_EXPIRES_IN` | No | Refresh token TTL (default `7d`) |
+| `COOKIE_DOMAIN` | No | Optional cookie domain |
+| `COOKIE_SECURE` | No | `true` in HTTPS environments |
+| `SEED_ADMIN_EMAIL` | No | Seed script admin email |
+| `SEED_ADMIN_PASSWORD` | No | Seed script admin password |
+| `SEED_COMPANY_NAME` | No | Seed script company name |
 
-Run inside each app directory for service-specific scripts:
-- `backend/package.json`
-- `frontend/package.json`
+---
 
-## API Reference
+## Backend API Endpoints (Current)
 
-### Health check
+Health:
+- `GET /api/v1/health`
+- `GET /api/v1/health/db`
 
-- Endpoint: `GET /api/v1/health`
-- URL: `http://localhost:3001/api/v1/health`
-- Purpose: verifies API availability and returns a timestamp.
+Auth:
+- `POST /api/v1/auth/signup/company`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/auth/me`
+- `GET /api/v1/auth/admin-check`
 
-### Root endpoint
-
-- Endpoint: `GET /`
-- URL: `http://localhost:3001/`
-- Purpose: simple backend welcome response.
-
-### Swagger docs
-
-- URL: `http://localhost:3001/docs`
-- Source annotations: `backend/index.ts` and route files in `backend/src/modules/*/routes/*.ts`
-
-## Project Structure
-
-```text
-.
-|-- backend/
-|   |-- index.ts
-|   |-- src/
-|   |   |-- middlewares/
-|   |   |-- modules/
-|   |   `-- utils/
-|   `-- .env.example
-|-- frontend/
-|   |-- src/
-|   |   |-- app/
-|   |   `-- lib/
-|   `-- package.json
-|-- turbo.json
-`-- package.json
-```
-
-## Development Workflow
-
-1. Start both apps with `bun run dev`.
-2. Visit frontend at `http://localhost:3000`.
-3. Confirm backend health from UI status card or call `GET /api/v1/health`.
-4. Open API docs at `http://localhost:3001/docs`.
-5. Before pushing changes, run:
-
-```bash
-bun run lint
-bun run typecheck
-bun run build
-```
-
-## Troubleshooting
-
-- Port already in use:
-  - Change `PORT` in `backend/.env`.
-  - Update `NEXT_PUBLIC_API_URL` in frontend environment if needed.
-- Frontend shows backend offline:
-  - Ensure backend is running on the expected port.
-  - Verify CORS is enabled in backend and URL is correct.
-- Swagger page not loading:
-  - Confirm backend started without runtime errors.
-  - Check `http://localhost:<PORT>/docs`.
+---
 
 ## Roadmap
 
-See `Unified_Company_Operating_System_PRD.md` for product direction, including:
-- HR and payroll modules
-- Leave and timesheet workflows
-- Kanban project management
-- AI assistant and automation features
+UniERP is actively evolving. Planned enhancements include:
+
+- 🔐 **SSO & 2FA** — Enterprise-grade authentication
+- 💳 **Subscription & Billing** — Built-in SaaS monetization
+- 🛡️ **Platform Admin Module** — Global tenant management and monitoring
+- 📊 **Advanced Reporting & Exports** — Deep analytics and data exports
+- 🌐 **Public API** — Third-party integrations and extensibility
+- 🗄️ **Soft Deletes & Backup/Recovery** — Data safety and compliance
+- 📜 **Entity-Level Change History** — Full field-level audit trails
+
+---
 
 ## Contributing
 
-1. Create a feature branch.
-2. Keep changes scoped and documented.
-3. Run lint, typecheck, and build before opening a PR.
-4. Add or update docs where behavior changes.
+1. Create a feature branch
+2. Keep changes scoped and documented
+3. Run `bun run lint`, `bun run typecheck`, and `bun run build` before opening a PR
+4. Add or update docs where behavior changes
+
+---
 
 ## License
 
 This project is proprietary and licensed under an all-rights-reserved model.
 No use, copying, modification, or distribution is allowed without prior written permission.
-See `LICENSE` for full terms.
+See [`LICENSE`](./LICENSE) for full terms.

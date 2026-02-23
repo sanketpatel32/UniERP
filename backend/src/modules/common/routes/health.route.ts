@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { checkHealth } from "../controllers/health.controller";
+import { checkDatabaseHealth, checkHealth } from "../controllers/health.controller";
 
 const router = Router();
 
@@ -20,5 +20,23 @@ const router = Router();
  *               $ref: '#/components/schemas/SuccessResponse'
  */
 router.get("/", checkHealth);
+
+/**
+ * @openapi
+ * /api/v1/health/db:
+ *   get:
+ *     summary: Database health check endpoint
+ *     description: Verifies database connectivity
+ *     tags:
+ *       - System
+ *     responses:
+ *       200:
+ *         description: Database is reachable
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ */
+router.get("/db", checkDatabaseHealth);
 
 export default router;
